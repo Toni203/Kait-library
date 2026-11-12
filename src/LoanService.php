@@ -57,21 +57,31 @@ class LoanService
     private static function getReader($email)
     {
         $reader = Database::fetchOne('SELECT * FROM users WHERE email = ?', [$email]);
-        if (!$reader) return ['error' => true, 'ok' => false, 'message' => 'Читатель не найден'];
-        if ($reader['is_blocked'] == 1) return ['error' => true, 'ok' => false, 'message' => 'Читатель заблокирован'];
+        if (!$reader) {
+            return ['error' => true, 'ok' => false, 'message' => 'Читатель не найден'];
+        }
+        if ($reader['is_blocked'] == 1) {
+            return ['error' => true, 'ok' => false, 'message' => 'Читатель заблокирован'];
+        }
         return $reader;
     }
 
     private static function getCopy($inventoryNumber)
     {
         $copy = Database::fetchOne('SELECT * FROM copies WHERE inventory_number = ?', [$inventoryNumber]);
-        if (!$copy) return ['error' => true, 'ok' => false, 'message' => 'Экземпляр не найден'];
-        
+        if (!$copy) {
+            return ['error' => true, 'ok' => false, 'message' => 'Экземпляр не найден'];
+        }
+
         if ($copy['status'] != 'available') {
             $msg = 'Экземпляр недоступен';
-            if ($copy['status'] == 'issued') $msg = 'Экземпляр уже выдан';
-            elseif ($copy['status'] == 'repair') $msg = 'Экземпляр на ремонте';
-            else $msg = 'Экземпляр списан или утерян';
+            if ($copy['status'] == 'issued') {
+                $msg = 'Экземпляр уже выдан';
+            } elseif ($copy['status'] == 'repair') {
+                $msg = 'Экземпляр на ремонте';
+            } else {
+                $msg = 'Экземпляр списан или утерян';
+            }
             return ['error' => true, 'ok' => false, 'message' => $msg];
         }
         return $copy;
@@ -82,7 +92,7 @@ class LoanService
         $warnings = [];
         $active = Database::fetchOne('SELECT COUNT(*) AS cnt FROM loans WHERE user_id = ? AND returned_at IS NULL', [$reader['id']]);
         $limit = ($reader['category'] == 'student') ? MAX_BOOKS_STUDENT : MAX_BOOKS_TEACHER;
-        
+
         if ($active['cnt'] > $limit) {
             return ['error' => true, 'ok' => false, 'message' => 'Превышен лимит книг на руках (' . $limit . ')'];
         }
