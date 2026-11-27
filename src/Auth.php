@@ -7,11 +7,19 @@ class Auth
         if (empty($_SESSION['user_id'])) {
             return null;
         }
+         practice/m04
         static $user = null;
         if ($user === null) {
             $user = Database::fetchOne('SELECT * FROM users WHERE id = ?', [$_SESSION['user_id']]);
         }
         return $user;
+=======
+        static $currentUser = null;
+        if ($currentUser === null) {
+            $currentUser = Database::fetchOne('SELECT * FROM users WHERE id = ?', [$_SESSION['user_id']]);
+        }
+        return $currentUser;
+         main
     }
 
     public static function check()
@@ -21,6 +29,7 @@ class Auth
 
     public static function hasRole($roles)
     {
+     practice/m04
         $user = self::user();
         if (!$user) {
             return false;
@@ -41,6 +50,38 @@ class Auth
             return false;
         }
         $_SESSION['user_id'] = $user['id'];
+
+        $currentUser = self::user();
+        if (!$currentUser) {
+            return false;
+        }
+        return in_array($currentUser['role'], (array)$roles);
+    }
+
+    public static function attempt($userEmail, $rawPassword)
+    {
+        $foundUser = Database::fetchOne('SELECT * FROM users WHERE email = ?', [$userEmail]);
+        if (!$foundUser) {
+            return false;
+        }
+        
+        if (!self::verifyCredentials($foundUser, $rawPassword)) {
+            return false;
+        }
+
+        $_SESSION['user_id'] = $foundUser['id'];
+        return true;
+    }
+
+    private static function verifyCredentials($userRecord, $rawPassword)
+    {
+        if ($userRecord['password'] !== md5($rawPassword)) {
+            return false;
+        }
+        if ($userRecord['is_blocked']) {
+            return false;
+        }
+         main
         return true;
     }
 
@@ -84,4 +125,8 @@ class Auth
             exit;
         }
     }
+       practice/m04
 }
+
+}
+        main

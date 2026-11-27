@@ -10,6 +10,9 @@ $action = $_GET['action'] ?? '';
 
 try {
     switch ($action) {
+        practice/m04
+
+         main
         case 'books.search':
             $books = BookRepository::search(
                 $_GET['q'] ?? '',

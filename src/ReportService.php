@@ -21,11 +21,10 @@ class ReportService
                     $copy = Database::fetchOne('SELECT * FROM copies WHERE id = ?', [$loan['copy_id']]);
                     $book = Database::fetchOne('SELECT * FROM books WHERE id = ?', [$copy['book_id']]);
                     $daysLate = floor((strtotime(date('Y-m-d')) - strtotime($loan['due_at'])) / 86400);
-                    $fine = 0;
-                    if ($user['category'] == 'student') {
-                        $fine = $daysLate * 15;
-                    }
+                    
+                    $fine = self::calculateFine($user['category'], $daysLate);
                     $totalFine += $fine;
+                    
                     $overdueBooks[] = [
                         'title' => $book['title'],
                         'inventory_number' => $copy['inventory_number'],
@@ -44,6 +43,17 @@ class ReportService
             }
         }
         return $result;
+    }
+
+    /**
+     * Расчёт штрафа за просрочку.
+     */
+    private static function calculateFine($userCategory, $daysLate)
+    {
+        if ($userCategory == 'student') {
+            return $daysLate * 15;
+        }
+        return 0;
     }
 
     /**
