@@ -7,11 +7,19 @@ class Auth
         if (empty($_SESSION['user_id'])) {
             return null;
         }
+         practice/m04
+        static $user = null;
+        if ($user === null) {
+            $user = Database::fetchOne('SELECT * FROM users WHERE id = ?', [$_SESSION['user_id']]);
+        }
+        return $user;
+=======
         static $currentUser = null;
         if ($currentUser === null) {
             $currentUser = Database::fetchOne('SELECT * FROM users WHERE id = ?', [$_SESSION['user_id']]);
         }
         return $currentUser;
+         main
     }
 
     public static function check()
@@ -21,6 +29,28 @@ class Auth
 
     public static function hasRole($roles)
     {
+     practice/m04
+        $user = self::user();
+        if (!$user) {
+            return false;
+        }
+        return in_array($user['role'], (array)$roles);
+    }
+
+    public static function attempt($email, $password)
+    {
+        $user = Database::fetchOne('SELECT * FROM users WHERE email = ?', [$email]);
+        if (!$user) {
+            return false;
+        }
+        if ($user['password'] !== md5($password)) {
+            return false;
+        }
+        if ($user['is_blocked']) {
+            return false;
+        }
+        $_SESSION['user_id'] = $user['id'];
+
         $currentUser = self::user();
         if (!$currentUser) {
             return false;
@@ -51,6 +81,7 @@ class Auth
         if ($userRecord['is_blocked']) {
             return false;
         }
+         main
         return true;
     }
 
@@ -94,4 +125,8 @@ class Auth
             exit;
         }
     }
+       practice/m04
 }
+
+}
+        main
